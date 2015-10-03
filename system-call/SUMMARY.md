@@ -1,10 +1,10 @@
 # Summary
 
-* [chapter-1 迈入系统调用的大门（刘欢）](chapter-1/README.md)
-    * [操作系统与系统调用（刘欢）)](chapter-1/os&syscall.md)
-    * [Linux系统调用与Windows API的异同（刘欢）]()
-    * [系统调用的错误处理（刘欢）]()
-    * [扩展阅读——良好的代码格式（刘欢）]()
+* [chapter-1 迈入系统调用的大门（刘欢，已完成）](chapter-1/README.md)
+    * [操作系统与系统调用（刘欢，已完成）](chapter-1/os&syscall.md)
+    * [Linux系统调用与Windows API的异同（刘欢，已完成）](chapter-1/linux_syacall&windows_api.md)
+    * [系统调用的错误处理（刘欢，已完成）](chapter-1/system_call_error.md)
+    * [扩展阅读——良好的代码格式（刘欢，已完成）](chapter-1/code_format.md)
 
 * [chapter-2 数据的管理与抽象——文件I/O（李林翰）](chapter-2/README.md)
     * [文件概述（李林翰）]()
