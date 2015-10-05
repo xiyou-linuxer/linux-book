@@ -36,13 +36,7 @@ int main(int argc, char *argv[])
 
 编译，注意gcc编译的命令行要加-lpthread，因为线程库并没有被默认链接。运行的结果如下：
 
-```c
-qianyi.lh@AY140217215456191276Z syscall$ 
-qianyi.lh@AY140217215456191276Z syscall$ ./a.out 
-Wait thread 139985861170944...
-thread 139985861170944 running...
-main thread 139985869313792... exit
-```
+![](images/thread_create.png)
 
 这个代码并没有做任何实质上的工作，只是演示了三个线程相关的函数的用法：创建线程的pthread_create函数、等待某线程结束的函数pthread_join和获取线程自身ID的函数pthread_self.
 
