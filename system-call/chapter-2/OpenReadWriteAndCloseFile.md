@@ -51,9 +51,16 @@ int main(int argc , char * argv[])  {
 
 ##系统调用——open
 
+marking...
 
 ##系统调用——read
 
+marking...
+
 ##系统调用——write
 
+marking...
+
 ##系统调用——close
+
+marking...
