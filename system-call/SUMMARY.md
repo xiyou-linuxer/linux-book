@@ -35,7 +35,7 @@
     * [线程概述（刘欢，已完成）](chapter-5/thread_overview.md)
     * [线程的创建与结束（刘欢，已完成）](chapter-5/thread_create.md)
     * [线程的互斥与同步（刘欢）](chapter-5/thread_mutex.md)
-    * [扩展阅读——线程的前世今生（刘欢）]()
+    * [扩展阅读——线程的前世今生（刘欢，已完成）](chapter-5/linux-thread-history)
     * [极限训练——并行的解决排序问题（刘欢）]()
 
 * [chapter-6 有些事情要通知你——信号控制（李通）](chapter-6/README.md)
