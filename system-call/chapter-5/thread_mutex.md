@@ -122,3 +122,90 @@ int main(int argc, char *argv[])
 其实也就是在原先++和--的地方换成了gcc的内置函数而已，因为是gcc内置函数，也就不用加头文件了。那么gcc这两个内置函数施了什么魔法呢？答案就是——暂时不告诉你。先知道这么做可以就好了，等到你学习了计算机原理和基本的汇编语言之后，本教程的高级版会慢慢介绍的。什么？你会反汇编自己学习了？太好了，简直棒棒哒。不过我就不展开讲了。
 
 貌似到这里问题解决了是吧？但是好像没有覆盖所有的需求场景，比如有时候我需要修改一个结构体的好多信息，而且在一个线程没有修改完之前，绝对不能有别的线程修改这个结构体的任何数据。这个需求看起来上面的原子操作函数就排不上用场了。那Linux的pthread库有没有比较一般性的机制来实现这种需求呢？当然有，那就是mutex（互斥锁）。
+
+先给出4个最最基本的mutex相关的函数，其他函数这章暂不介绍。
+
+```c
+#include <pthread.h>
+
+int pthread_mutex_init(pthread_mutex_t *restrict mutex,
+              const pthread_mutexattr_t *restrict attr);
+
+int pthread_mutex_destroy(pthread_mutex_t *mutex);
+
+int pthread_mutex_lock(pthread_mutex_t *mutex);
+
+int pthread_mutex_unlock(pthread_mutex_t *mutex);
+
+```
+
+定义一个pthread_mutex_t类型即定义了一个mutex。pthread_mutex_init和pthread_mutex_destroy分别对这个类型进行初始化和销毁操作（资源释放）。其中pthread_mutex_init第二个参数是pthread_mutexattr_t类型的指针，用于给mutex设置特殊属性，如果不需要特殊属性（比如本章），直接用下面的初始化方式即可。
+
+```c
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+```
+
+那mutex怎么用呢？回到上一个例子，下面给出使用mutex修改的代码：
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+
+int count = 0;
+
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+void *thread_func(void *args)
+{
+    int i;
+    for (i = 0; i < 100000000; ++i) {
+        pthread_mutex_lock(&mutex);
+        count--;
+        pthread_mutex_unlock(&mutex);
+    }
+    return NULL;
+}
+
+int main(int argc, char *argv[])
+{
+    pthread_t tid;
+
+    int rc = pthread_create(&tid, NULL, thread_func, NULL);
+    if (rc < 0) {
+        perror("create thread error: ");
+        return -1;
+    }
+
+    int i;
+    for (i = 0; i < 100000000; ++i) {
+        pthread_mutex_lock(&mutex);
+        count++;
+        pthread_mutex_unlock(&mutex);
+    }
+
+    pthread_join(tid, NULL);
+
+    printf("count = %d\n", count);
+
+    pthread_mutex_destroy(&mutex);
+
+    return 0;
+}
+```
+
+抛开初始化和销毁，好像也没有什么复杂的么。不过是在操作共享的数据之前加上了锁，操作结束之后解掉了锁。看起来好像没有之前那个原子操作的例子简单是吧。但是，mutex的应用场景更一般化一些。比如这里的lock和unlock之间完全可以有很多行代码，操作多个具有关联性的数据。比如“转账”这个场景，需要从A帐号扣除金额后添加到B账户。那么就需要A-和B+这个关联操作一起发生，而不是A-之后B还没加上去就发生了对A或B的其它操作（只是个例子，现实的场景肯定用事务实现。啥是事务？额...我啥也没说，刚刚是幻觉）。
+
+但是，可能你会问。没有这个锁，就没法对刚刚那个count进行操作吗？看起来这个mutex没有和count建立什么关联啊。没错，有没有这个mutex，和操作count没有一点关系。这里一定要理解，**mutex只是用来实现同步的逻辑的机制，不是强制保护某类资源的机制**。
+
+可以这么理解：有个变量flag初始为0，主线程判断flag为0则count++，然后flag赋值1，循环；子线程判断flag为1则count--，然后flag赋值为0，循环。这样看起来也能实现是吧？但是呢，如果flag的赋值操作是原子的，那么这一假设是成立的。但可惜不是，如果有多个线程执行这个逻辑，对flag的赋值会出现并发的错误，就行对count进行并发操作一样。mutex这个东西就像是操作系统提供给我们的一种“flag”机制，而mutex的lock和unlock操作保证是原子的，所以就保证了用mutex作为“flag”的正确性。那能否使用原子操作的flag实现呢，当然可以的。不过mutex在进行lock操作时，如果短暂的等待后发现别的代码已经lock了mutex且没有unlock，会挂起当前线程进入休眠状态，以免忙等待白白空耗CPU资源。那存在这种使用原子变量进行“加锁”操作的机制呢？还真有，叫做spin_lock（自旋锁），如果lock失败会进入循环判断，不断的尝试lock操作。不过这里就不展开讲了，有兴趣请自行了解（当然也可以自己尝试实现一个简单的spin_lock，很简单的）。
+
+这样理解了吧？mutex并不是强制“锁住”了某些变量无法修改，它仅仅是一个可以原子修改状态的“flag”罢了。理解到这里，你就能利用这个“flag”实现很多同步场景了。这篇作为入门，点到为止。之后的版本会给出真正有价值有意义的代码。
+
+结束mutex前罗嗦一下，单变量的话可以用原子变量就不要用mutex了，比如计数器count之类。为什么呢？看看下面的简单性能测试就知道了。
+
+![](images/time_mutex.png)
+
+这里用time命令简单测试一下这两个程序执行的效率。显而易见，原子变量的版本的执行效率比mutex是要好很多的（简单对比，不分析cache之类的影响）。
+
+其实线程/进程间的同步机制有很多种，如果一个一个介绍起来估计理解和区分的难度比较大。这里就不展开介绍了，后面讲到实际的需求时，再逐渐一个一个引入吧。有实际的场景的话，学习起来应该更有兴趣，印象也更深刻。

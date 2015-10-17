@@ -1,4 +1,4 @@
-﻿# Summary
+# Summary
 
 * [chapter-1 迈入系统调用的大门（刘欢，已完成）](chapter-1/README.md)
     * [操作系统与系统调用（刘欢，已完成）](chapter-1/os&syscall.md)
@@ -34,9 +34,9 @@
 * [chapter-5 比进程还小的调度单元——线程（刘欢，已完成）](chapter-5/README.md)
     * [线程概述（刘欢，已完成）](chapter-5/thread_overview.md)
     * [线程的创建与结束（刘欢，已完成）](chapter-5/thread_create.md)
-    * [线程的互斥与同步（刘欢）](chapter-5/thread_mutex.md)
+    * [线程的互斥与同步（刘欢，已完成）](chapter-5/thread_mutex.md)
     * [扩展阅读——线程的前世今生（刘欢，已完成）](chapter-5/linux-thread-history.md)
-    * [极限训练——并行的解决排序问题（刘欢）]()
+    * [极限训练——生产者与消费者（刘欢）](chapter-5/producer_consumer.md)
 
 * [chapter-6 有些事情要通知你——信号控制（李通）](chapter-6/README.md)
     * [信号概述（李通）]()
